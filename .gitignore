@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+
+# Build / SvelteKit
+.svelte-kit/
+build/
+dist/
+.output/
+.vercel/
+.netlify/
+.wrangler/
+
+# Bun
+.bun/
+bun-debug.log*
+
+# Other lockfiles (project uses bun.lock)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Logs & debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test / coverage
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+.vitest/
+
+# Caches
+.cache/
+*.tsbuildinfo
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# OS
+.DS_Store
+.DS_Store?
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Editors (личные; общие настройки VS Code можно коммитить)
+.idea/
+*.swp
+*.swo
+*~
+.cursor/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Misc
+*.local
+*.pem
+.turbo/
