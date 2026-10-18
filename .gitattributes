@@ -1,5 +1,3 @@
-# Normalize line endings for the whole repo
 * text=auto eol=lf
 
-# Hooks must be LF or Git/Husky warn on Windows
 .husky/* text eol=lf
