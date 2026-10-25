@@ -29,3 +29,8 @@ interface Class {
 }
 export type ClassType = Class;
 type BaseClassID = "STRUCTURE";
+
+export type GuidesGroup = {
+  id: string;
+  name: string;
+};
