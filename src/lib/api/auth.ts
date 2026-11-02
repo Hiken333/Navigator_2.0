@@ -1,6 +1,5 @@
 import { client } from "./client";
 export async function login(username: string, password: string) {
-  console.log("1");
   try {
     await client.authbasic(username, password);
   } catch (e) {

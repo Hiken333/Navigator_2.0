@@ -12,16 +12,17 @@
 		selected?: boolean;
 		onSelect: (id: string) => void;
 	} = $props();
+
+	let label = $derived(classLabel(item));
 </script>
 
 <Button
 	variant={selected ? "secondary" : "ghost"}
-	class="h-auto w-full justify-start py-2"
+	size="sm"
+	class="h-6 w-full justify-start px-1.5 text-xs font-normal"
+	title="{label} ({item.id})"
 	aria-current={selected ? "true" : undefined}
 	onclick={() => onSelect(item.id)}
 >
-	<span class="flex min-w-0 flex-col items-start gap-0.5">
-		<span class="w-full truncate text-left">{classLabel(item)}</span>
-		<span class="w-full truncate text-left text-muted-foreground">{item.id}</span>
-	</span>
+	<span class="min-w-0 flex-1 truncate text-left">{label}</span>
 </Button>

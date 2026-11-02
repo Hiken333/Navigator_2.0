@@ -76,7 +76,7 @@
 			<Empty.Root class="flex-1">
 				<Empty.Header>
 					<Empty.Title>Класс не выбран</Empty.Title>
-					<Empty.Description>Найдите тип или откройте группу справочников.</Empty.Description>
+					<Empty.Description>Откройте каталог и выберите класс.</Empty.Description>
 				</Empty.Header>
 			</Empty.Root>
 		{/if}
