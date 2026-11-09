@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as Alert from "$lib/components/ui/alert";
-	import * as Card from "$lib/components/ui/card";
 	import * as Empty from "$lib/components/ui/empty";
 	import CatalogSidebar from "$lib/components/catalog/CatalogSidebar.svelte";
+	import ClassWorkspace from "$lib/components/views/ClassWorkspace.svelte";
 	import { classLabel } from "$lib/components/catalog/filter";
 	import { guideGroups, guidesAbs, loadCatalog, typesAbs } from "$lib/stores/catalog";
 	import { session } from "$lib/stores/session";
@@ -54,24 +54,17 @@
 		{loading}
 		onSelect={(id) => (selectedId = id)}
 	/>
-	<main class="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
+	<main class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
 		{#if loadError}
-			<Alert.Root variant="destructive">
-				<Alert.Title>Каталог недоступен</Alert.Title>
-				<Alert.Description>{loadError}</Alert.Description>
-			</Alert.Root>
+			<div class="p-4">
+				<Alert.Root variant="destructive">
+					<Alert.Title>Каталог недоступен</Alert.Title>
+					<Alert.Description>{loadError}</Alert.Description>
+				</Alert.Root>
+			</div>
 		{/if}
 		{#if selected}
-			<Card.Root class="max-w-xl">
-				<Card.Header>
-					<Card.Title>{classLabel(selected)}</Card.Title>
-					<Card.Description>{selected.id}</Card.Description>
-				</Card.Header>
-				<Card.Content class="flex flex-col gap-2 text-sm">
-					<p>Имя: {selected.name}</p>
-					<p class="text-muted-foreground">Интерфейс: {selected.classInterface}</p>
-				</Card.Content>
-			</Card.Root>
+			<ClassWorkspace classId={selected.id} title={classLabel(selected)} />
 		{:else if !loading}
 			<Empty.Root class="flex-1">
 				<Empty.Header>
