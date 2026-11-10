@@ -2,7 +2,7 @@ import type { models } from "as2mca-api";
 import { client } from "./client";
 import { mapApiError } from "./errors";
 
-export const VIEW_ROWS_LIMIT = 80;
+export const VIEW_ROWS_LIMIT = 1000;
 
 export async function classViewsGet(sessionId: string, classId: string) {
   try {
@@ -23,6 +23,8 @@ export async function viewGridGet(
       viewShortName: view.shortName,
       classId,
       rowsLimit: VIEW_ROWS_LIMIT,
+      allowTimestampMilliseconds: true,
+      hint: "FIRST_ROWS(1)",
     }),
   ]);
 
