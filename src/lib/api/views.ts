@@ -12,29 +12,6 @@ export async function classViewsGet(sessionId: string, classId: string) {
   }
 }
 
-async function viewRowsGet(sessionId: string, classId: string, view: models.View) {
-  let lastError: unknown;
-  let rows: models.RowItem[][] = [];
-
-  for (const rowsLimit of VIEW_ROW_LIMITS) {
-    try {
-      rows = await client.viewDataGetCancelable(sessionId, {
-        viewShortName: view.shortName,
-        classId,
-        rowsLimit,
-      });
-      if (rows.length > 0) return rows;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  if (lastError && rows.length === 0) {
-    throw lastError;
-  }
-  return rows;
-}
-
 export async function viewGridGet(
   sessionId: string,
   classId: string,

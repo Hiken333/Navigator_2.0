@@ -11,12 +11,21 @@ export const VIEW_SEARCH_THRESHOLD = 8;
 export type GridAlign = "left" | "center" | "right";
 
 export type GridColumn = {
+  id: string;
   name: string;
   title: string;
   align: GridAlign;
   minWidth: number;
   isId: boolean;
 };
+
+export const MIN_GRID_COLUMN_WIDTH = 56;
+export const MAX_GRID_COLUMN_WIDTH = 640;
+export const GRID_COLUMN_STEP = 16;
+
+export function clampColumnWidth(width: number) {
+  return Math.min(MAX_GRID_COLUMN_WIDTH, Math.max(MIN_GRID_COLUMN_WIDTH, Math.round(width)));
+}
 
 export type GridRow = {
   key: string;
@@ -111,13 +120,22 @@ function columnTitle(column: Column, code: string) {
   return stripAccel(column.name) || code;
 }
 
+function defaultColumnWidth(title: string, apiWidth: string) {
+  const fromApi = Number(apiWidth) * 8;
+  const fromTitle = Math.min(240, title.length * 8 + 28);
+  const preferred = Number.isFinite(fromApi) && fromApi > 0 ? Math.max(fromApi, fromTitle) : fromTitle;
+  return clampColumnWidth(preferred);
+}
+
 function toGridColumn(column: Column, rowNames: Set<string>): GridColumn {
   const name = pickColumnName(column, rowNames);
+  const title = columnTitle(column, name);
   return {
+    id: `${column.position}:${name}:${column.alias ?? ""}`,
     name,
-    title: columnTitle(column, name),
+    title,
     align: ALIGN[column.align] ?? "left",
-    minWidth: Math.min(320, Math.max(72, Number(column.width) * 8 || 96)),
+    minWidth: defaultColumnWidth(title, column.width),
     isId: name === "ID",
   };
 }
@@ -147,6 +165,7 @@ export function gridColumnsFromRows(rows: RowItem[][]): GridColumn[] {
     }
   }
   return names.map((name) => ({
+    id: name,
     name,
     title: name,
     align: name === "ID" ? "right" : "left",

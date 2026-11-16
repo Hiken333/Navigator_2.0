@@ -85,8 +85,10 @@
 			</Alert.Root>
 		</div>
 	{:else if selectedView || $classViews.gridLoading}
-		<div class="min-h-0 flex-1 overflow-auto" aria-busy={$classViews.gridLoading}>
-			<ViewGrid {columns} {rows} loading={$classViews.gridLoading} />
+		<div class="min-h-0 min-w-0 flex-1" aria-busy={$classViews.gridLoading}>
+			{#key selectedView?.id ?? classId}
+				<ViewGrid {columns} {rows} loading={$classViews.gridLoading} />
+			{/key}
 		</div>
 		{#if !$classViews.gridLoading && columns.length > 0}
 			<footer class="flex items-center justify-between gap-3 border-t px-4 py-2 text-xs text-muted-foreground">
