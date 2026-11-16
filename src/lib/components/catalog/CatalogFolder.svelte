@@ -41,7 +41,10 @@
 					class="size-3.5 group-data-[state=open]:rotate-90"
 				/>
 				<span class="min-w-0 flex-1 truncate text-left">{title}</span>
-				<Badge variant="secondary" class="h-4 min-w-4 px-1 text-xs leading-none">{count}</Badge>
+				<Badge
+					variant="secondary"
+					class="h-4 min-w-4 px-1 text-xs leading-none">{count}</Badge
+				>
 			</Button>
 		{/snippet}
 	</Collapsible.Trigger>

@@ -121,6 +121,9 @@
 					{/if}
 				</CatalogFolder>
 			</div>
+			<div class="pr-2">
+				
+			</div>
 		{/if}
 	</ScrollArea>
 	<button
