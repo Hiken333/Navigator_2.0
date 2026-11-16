@@ -2,7 +2,6 @@
 	import * as Alert from "$lib/components/ui/alert";
 	import * as Empty from "$lib/components/ui/empty";
 	import { Skeleton } from "$lib/components/ui/skeleton";
-	import { VIEW_ROWS_LIMIT } from "$lib/api/views";
 	import { classViews, clearClassViews, openClassViews, selectClassView } from "$lib/stores/classViews";
 	import { session } from "$lib/stores/session";
 	import ViewGrid from "./ViewGrid.svelte";
@@ -22,9 +21,7 @@
 	);
 	let columns = $derived(resolveGridColumns($classViews.columns, $classViews.rows));
 	let rows = $derived(gridRows(columns, $classViews.rows));
-	let rowCountLabel = $derived(
-		`${rows.length.toLocaleString("ru-RU")} из ${VIEW_ROWS_LIMIT.toLocaleString("ru-RU")}`,
-	);
+	let rowCountLabel = $derived(`${rows.length.toLocaleString("ru-RU")} строк`);
 
 	$effect(() => {
 		const current = $session;
@@ -99,7 +96,7 @@
 						<span>({selectedView.shortName})</span>
 					{/if}
 				</p>
-				<p class="shrink-0">{rowCountLabel} строк</p>
+				<p class="shrink-0">{rowCountLabel}</p>
 			</footer>
 		{/if}
 	{/if}

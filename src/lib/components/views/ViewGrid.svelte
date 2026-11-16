@@ -26,7 +26,7 @@
 	<Empty.Root class="flex-1">
 		<Empty.Header>
 			<Empty.Title>Нет данных</Empty.Title>
-			<Empty.Description>Представление не вернуло колонки.</Empty.Description>
+			<Empty.Description>Представление не вернуло колонки и строки.</Empty.Description>
 		</Empty.Header>
 	</Empty.Root>
 {:else}

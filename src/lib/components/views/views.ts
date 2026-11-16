@@ -4,6 +4,7 @@ type View = models.View;
 type Column = models.Column;
 type RowItem = models.RowItem;
 type Align = models.Align;
+type Invisible = models.Invisible;
 
 export const VIEW_SEARCH_THRESHOLD = 8;
 
@@ -29,8 +30,10 @@ const ALIGN: Record<Align, GridAlign> = {
   "2": "right",
 };
 
+const HIDDEN: Invisible[] = ["1", "2"];
+
 export function viewLabel(view: View) {
-  const name = view.name.replaceAll("&", "").trim();
+  const name = stripAccel(view.name);
   return name || view.shortName;
 }
 
@@ -57,33 +60,80 @@ export function filterViews(views: View[], query: string) {
   return ordered.filter((view) => matchesViewQuery(view, query));
 }
 
-export function isColumnVisible(column: Column) {
-  return column.isInvisible !== "2";
+export function isColumnHidden(column: Column) {
+  return HIDDEN.includes(column.isInvisible);
 }
 
-function columnCode(column: Column) {
-  return column.alias || column.qual || column.name;
+function stripAccel(value: string) {
+  return value.replaceAll("&", "").trim();
 }
 
-function columnTitle(column: Column) {
-  return column.name.replaceAll("&", "").trim() || columnCode(column);
+function uniqueKeys(values: Array<string | undefined>) {
+  const keys: string[] = [];
+  for (const value of values) {
+    const key = value?.trim();
+    if (!key || keys.includes(key)) continue;
+    keys.push(key);
+  }
+  return keys;
 }
 
-function toGridColumn(column: Column): GridColumn {
-  const name = columnCode(column);
+export function columnKeys(column: Column) {
+  const qual = column.qual?.trim();
+  const qualTail = qual?.includes(".") ? qual.slice(qual.lastIndexOf(".") + 1) : undefined;
+  return uniqueKeys([column.alias, column.qual, qualTail, column.name, stripAccel(column.name)]);
+}
+
+function rowColumnNames(rows: RowItem[][]) {
+  const names = new Set<string>();
+  for (const row of rows) {
+    for (const item of row) {
+      if (item.columnName) names.add(item.columnName);
+    }
+  }
+  return names;
+}
+
+function positionalCode(column: Column) {
+  const position = Number(column.position);
+  if (!Number.isFinite(position) || position <= 0) return undefined;
+  return `C_${position}`;
+}
+
+function pickColumnName(column: Column, rowNames: Set<string>) {
+  const keys = columnKeys(column);
+  const positional = positionalCode(column);
+  const candidates = positional ? [...keys, positional] : keys;
+  return candidates.find((key) => rowNames.has(key)) ?? keys[0] ?? column.name;
+}
+
+function columnTitle(column: Column, code: string) {
+  return stripAccel(column.name) || code;
+}
+
+function toGridColumn(column: Column, rowNames: Set<string>): GridColumn {
+  const name = pickColumnName(column, rowNames);
   return {
     name,
-    title: columnTitle(column),
+    title: columnTitle(column, name),
     align: ALIGN[column.align] ?? "left",
     minWidth: Math.min(320, Math.max(72, Number(column.width) * 8 || 96)),
     isId: name === "ID",
   };
 }
 
-export function gridColumns(columns: Column[]): GridColumn[] {
-  const visible = columns.filter(isColumnVisible);
-  const source = visible.length > 0 ? visible : columns;
-  return [...source].sort((a, b) => Number(a.position) - Number(b.position)).map(toGridColumn);
+function visibleColumns(columns: Column[]) {
+  const shown = columns.filter((column) => !isColumnHidden(column));
+  if (shown.length > 0) return shown;
+  return columns.filter((column) => column.isInvisible !== "2");
+}
+
+export function gridColumns(columns: Column[], rows: RowItem[][] = []): GridColumn[] {
+  const rowNames = rowColumnNames(rows);
+  const source = visibleColumns(columns);
+  return [...source]
+    .sort((a, b) => Number(a.position) - Number(b.position))
+    .map((column) => toGridColumn(column, rowNames));
 }
 
 export function gridColumnsFromRows(rows: RowItem[][]): GridColumn[] {
@@ -91,7 +141,7 @@ export function gridColumnsFromRows(rows: RowItem[][]): GridColumn[] {
   const seen = new Set<string>();
   for (const row of rows) {
     for (const item of row) {
-      if (seen.has(item.columnName)) continue;
+      if (!item.columnName || seen.has(item.columnName)) continue;
       seen.add(item.columnName);
       names.push(item.columnName);
     }
@@ -106,18 +156,31 @@ export function gridColumnsFromRows(rows: RowItem[][]): GridColumn[] {
 }
 
 export function resolveGridColumns(columns: Column[], rows: RowItem[][]): GridColumn[] {
-  const fromMeta = gridColumns(columns);
-  if (fromMeta.length > 0) return fromMeta;
-  return gridColumnsFromRows(rows);
+  const fromMeta = gridColumns(columns, rows);
+  if (fromMeta.length === 0) return gridColumnsFromRows(rows);
+
+  const known = new Set(fromMeta.map((column) => column.name));
+  const extras = gridColumnsFromRows(rows).filter((column) => !known.has(column.name));
+  return extras.length > 0 ? [...fromMeta, ...extras] : fromMeta;
+}
+
+function cellMap(row: RowItem[]) {
+  const cells = new Map<string, string>();
+  for (const item of row) {
+    if (!item.columnName) continue;
+    cells.set(item.columnName, item.value ?? "");
+  }
+  return cells;
 }
 
 export function gridRows(columns: GridColumn[], rows: RowItem[][]): GridRow[] {
   return rows.map((row) => {
+    const values = cellMap(row);
     const cells: Record<string, string> = {};
-    for (const item of row) {
-      cells[item.columnName] = item.value ?? "";
+    for (const column of columns) {
+      cells[column.name] = values.get(column.name) ?? "";
     }
-    const objectId = cells.ID || undefined;
+    const objectId = values.get("ID") || cells.ID || undefined;
     const key = objectId ?? columns.map((column) => cells[column.name] ?? "").join("\u001f");
     return { key, objectId, cells };
   });
