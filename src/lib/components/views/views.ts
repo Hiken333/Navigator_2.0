@@ -131,7 +131,9 @@ function visibleColumns(columns: Column[]) {
 export function gridColumns(columns: Column[], rows: RowItem[][] = []): GridColumn[] {
   const rowNames = rowColumnNames(rows);
   const source = visibleColumns(columns);
-  return [...source].sort((a, b) => Number(a.position) - Number(b.position)).map((column) => toGridColumn(column, rowNames));
+  return [...source]
+    .sort((a, b) => Number(a.position) - Number(b.position))
+    .map((column) => toGridColumn(column, rowNames));
 }
 
 export function gridColumnsFromRows(rows: RowItem[][]): GridColumn[] {
