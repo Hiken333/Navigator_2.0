@@ -2,8 +2,7 @@ import type { models } from "as2mca-api";
 import { client } from "./client";
 import { mapApiError } from "./errors";
 
-export const VIEW_ROWS_LIMIT = 80;
-const VIEW_ROW_LIMITS = [VIEW_ROWS_LIMIT, 10, 5] as const;
+export const VIEW_ROWS_LIMIT = 1000;
 
 export async function classViewsGet(sessionId: string, classId: string) {
   try {
@@ -43,7 +42,13 @@ export async function viewGridGet(
 ): Promise<{ columns: models.Column[]; rows: models.RowItem[][] }> {
   const [columnsResult, rowsResult] = await Promise.allSettled([
     client.viewColumnsGet(sessionId, view.id),
-    viewRowsGet(sessionId, classId, view),
+    client.viewDataGetCancelable(sessionId, {
+      viewShortName: view.shortName,
+      classId,
+      rowsLimit: VIEW_ROWS_LIMIT,
+      allowTimestampMilliseconds: true,
+      hint: "FIRST_ROWS(1)",
+    }),
   ]);
 
   if (columnsResult.status === "rejected" && rowsResult.status === "rejected") {
