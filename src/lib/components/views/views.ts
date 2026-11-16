@@ -123,7 +123,8 @@ function columnTitle(column: Column, code: string) {
 function defaultColumnWidth(title: string, apiWidth: string) {
   const fromApi = Number(apiWidth) * 8;
   const fromTitle = Math.min(240, title.length * 8 + 28);
-  const preferred = Number.isFinite(fromApi) && fromApi > 0 ? Math.max(fromApi, fromTitle) : fromTitle;
+  const preferred =
+    Number.isFinite(fromApi) && fromApi > 0 ? Math.max(fromApi, fromTitle) : fromTitle;
   return clampColumnWidth(preferred);
 }
 
