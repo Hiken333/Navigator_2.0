@@ -41,7 +41,9 @@ function writeJson(key: string, value: unknown) {
 function isFavoriteClass(value: unknown): value is FavoriteClass {
   if (!value || typeof value !== "object") return false;
   const pin = value as FavoriteClass;
-  return typeof pin.classId === "string" && pin.classId.length > 0 && typeof pin.directory === "string";
+  return (
+    typeof pin.classId === "string" && pin.classId.length > 0 && typeof pin.directory === "string"
+  );
 }
 
 function createRecentStore() {
