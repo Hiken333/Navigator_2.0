@@ -11,6 +11,11 @@ export type CatalogSection = {
   items: ClassType[];
 };
 
+export type FavoritePin = {
+  classId: string;
+  directory: string;
+};
+
 export function classLabel(item: ClassType) {
   return stripAccel(item.name) || stripAccel(item.menuCaption ?? "") || item.id;
 }
@@ -88,6 +93,46 @@ export function catalogSections(
   const typeItems = searching ? types.filter((item) => matchesQuery(item, query)) : types;
   const guideItems = searching ? guides.filter((item) => matchesQuery(item, query)) : guides;
   return mergeByTitle([...groupTypes(typeItems), ...groupByGuideGroup(guideItems, groups)]);
+}
+
+export function favoriteSections(
+  catalog: ClassType[],
+  pins: FavoritePin[],
+  query: string,
+  sectionPrefix = "favorite",
+): CatalogSection[] {
+  const byId = new Map(catalog.map((item) => [item.id, item]));
+  const searching = isSearchQuery(query);
+  const sections: CatalogSection[] = [];
+  const indexByDirectory = new Map<string, number>();
+
+  for (const pin of pins) {
+    const item = byId.get(pin.classId);
+    if (!item) continue;
+    if (searching && !matchesQuery(item, query)) continue;
+    const existing = indexByDirectory.get(pin.directory);
+    if (existing === undefined) {
+      indexByDirectory.set(pin.directory, sections.length);
+      sections.push({
+        id: `${sectionPrefix}:${pin.directory}`,
+        title: pin.directory,
+        items: [item],
+      });
+      continue;
+    }
+    const section = sections[existing];
+    if (section && !section.items.some((current) => current.id === item.id)) {
+      section.items.push(item);
+    }
+  }
+  return sections;
+}
+
+export function directoryOf(classId: string, sections: CatalogSection[]) {
+  return (
+    sections.find((section) => section.items.some((item) => item.id === classId))?.title ??
+    "Без группы"
+  );
 }
 
 function mergeByTitle(sections: CatalogSection[]): CatalogSection[] {

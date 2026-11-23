@@ -21,10 +21,16 @@ export type GridColumn = {
 
 export const MIN_GRID_COLUMN_WIDTH = 56;
 export const MAX_GRID_COLUMN_WIDTH = 640;
+export const FIT_GRID_COLUMN_WIDTH = 2000;
 export const GRID_COLUMN_STEP = 16;
+export const GRID_COLUMN_CHROME = 28;
 
 export function clampColumnWidth(width: number) {
   return Math.min(MAX_GRID_COLUMN_WIDTH, Math.max(MIN_GRID_COLUMN_WIDTH, Math.round(width)));
+}
+
+export function clampFitColumnWidth(width: number) {
+  return Math.min(FIT_GRID_COLUMN_WIDTH, Math.max(MIN_GRID_COLUMN_WIDTH, Math.round(width)));
 }
 
 export type GridRow = {

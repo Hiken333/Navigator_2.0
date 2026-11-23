@@ -4,9 +4,10 @@
 	import { Input } from "$lib/components/ui/input";
 	import { ScrollArea } from "$lib/components/ui/scroll-area";
 	import { Skeleton } from "$lib/components/ui/skeleton";
+	import { favoriteClasses, recentClassIds } from "$lib/stores/catalogPins";
 	import CatalogFolder from "./CatalogFolder.svelte";
 	import GuideGroup from "./GuideGroup.svelte";
-	import { catalogSections, isSearchQuery } from "./filter";
+	import { catalogSections, directoryOf, favoriteSections, isSearchQuery } from "./filter";
 
 	const MIN_WIDTH = 176;
 	const MAX_WIDTH = 560;
@@ -31,13 +32,37 @@
 	} = $props();
 
 	let catalogOpen = $state(true);
+	let recentOpen = $state(false);
+	let favoritesOpen = $state(false);
 	let width = $state(224);
 	let dragOriginX = 0;
 	let dragOriginWidth = 0;
 
 	let searching = $derived(isSearchQuery(query));
+	let catalog = $derived([...types, ...guides]);
 	let sections = $derived(catalogSections(types, guides, groups, query));
 	let catalogCount = $derived(types.length + guides.length);
+	let favoriteIds = $derived(new Set($favoriteClasses.map((pin) => pin.classId)));
+	let directories = $derived(catalogSections(types, guides, groups, ""));
+	let recentPins = $derived(
+		$recentClassIds.map((classId) => ({
+			classId,
+			directory: directoryOf(classId, directories),
+		})),
+	);
+	let recentSections = $derived(favoriteSections(catalog, recentPins, query, "recent"));
+	let pinnedSections = $derived(favoriteSections(catalog, $favoriteClasses, query));
+	let recentCount = $derived(
+		recentSections.reduce((sum, section) => sum + section.items.length, 0),
+	);
+	let favoriteCount = $derived(
+		pinnedSections.reduce((sum, section) => sum + section.items.length, 0),
+	);
+
+	function selectClass(id: string) {
+		recentClassIds.remember(id);
+		onSelect(id);
+	}
 
 	function clampWidth(next: number) {
 		return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(next)));
@@ -113,8 +138,10 @@
 									title={section.title}
 									items={section.items}
 									{selectedId}
+									{favoriteIds}
 									forceOpen={searching}
-									{onSelect}
+									onSelect={selectClass}
+									onToggleFavorite={favoriteClasses.toggle}
 								/>
 							{/each}
 						</div>
@@ -122,7 +149,58 @@
 				</CatalogFolder>
 			</div>
 			<div class="pr-2">
-				
+				<CatalogFolder
+					title="Последние"
+					count={recentCount}
+					bind:open={recentOpen}
+					forceOpen={searching && recentSections.length > 0}
+				>
+					{#if recentSections.length === 0}
+						<p class="px-2 py-1 text-xs text-muted-foreground">
+							{searching ? "В последних ничего не найдено." : "Пока пусто."}
+						</p>
+					{:else}
+						<div class="flex flex-col pl-1">
+							{#each recentSections as section (section.id)}
+								<GuideGroup
+									title={section.title}
+									items={section.items}
+									{selectedId}
+									{favoriteIds}
+									forceOpen={searching}
+									onSelect={selectClass}
+									onToggleFavorite={favoriteClasses.toggle}
+								/>
+							{/each}
+						</div>
+					{/if}
+				</CatalogFolder>
+				<CatalogFolder
+					title="Избранные"
+					count={favoriteCount}
+					bind:open={favoritesOpen}
+					forceOpen={searching && pinnedSections.length > 0}
+				>
+					{#if pinnedSections.length === 0}
+						<p class="px-2 py-1 text-xs text-muted-foreground">
+							{searching ? "В избранном ничего не найдено." : "Пока пусто."}
+						</p>
+					{:else}
+						<div class="flex flex-col pl-1">
+							{#each pinnedSections as section (section.id)}
+								<GuideGroup
+									title={section.title}
+									items={section.items}
+									{selectedId}
+									{favoriteIds}
+									forceOpen={searching}
+									onSelect={selectClass}
+									onToggleFavorite={favoriteClasses.toggle}
+								/>
+							{/each}
+						</div>
+					{/if}
+				</CatalogFolder>
 			</div>
 		{/if}
 	</ScrollArea>

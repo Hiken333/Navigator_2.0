@@ -8,14 +8,18 @@
 		title,
 		items,
 		selectedId,
+		favoriteIds,
 		forceOpen = false,
 		onSelect,
+		onToggleFavorite,
 	}: {
 		title: string;
 		items: ClassType[];
 		selectedId: string | null;
+		favoriteIds: ReadonlySet<string>;
 		forceOpen?: boolean;
 		onSelect: (id: string) => void;
+		onToggleFavorite: (id: string, directory: string) => void;
 	} = $props();
 
 	let open = $state(false);
@@ -28,7 +32,13 @@
 		<ul class="flex flex-col py-0.5 pl-3">
 			{#each visible as item (item.id)}
 				<li>
-					<ClassListItem {item} selected={item.id === selectedId} {onSelect} />
+					<ClassListItem
+						{item}
+						selected={item.id === selectedId}
+						favorite={favoriteIds.has(item.id)}
+						{onSelect}
+						onToggleFavorite={(id) => onToggleFavorite(id, title)}
+					/>
 				</li>
 			{/each}
 		</ul>
